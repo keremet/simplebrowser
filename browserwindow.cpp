@@ -96,7 +96,6 @@ BrowserWindow::BrowserWindow(Browser *browser, QWebEngineProfile *profile, bool 
         menuBar()->addMenu(createEditMenu());
         menuBar()->addMenu(createViewMenu(toolbar));
         menuBar()->addMenu(createWindowMenu(m_tabWidget));
-        menuBar()->addMenu(createHelpMenu());
     }
 
     QWidget *centralWidget = new QWidget(this);
@@ -157,11 +156,11 @@ QSize BrowserWindow::sizeHint() const
 
 QMenu *BrowserWindow::createFileMenu(TabWidget *tabWidget)
 {
-    QMenu *fileMenu = new QMenu(tr("&File"));
-    fileMenu->addAction(tr("&New Window"), this, &BrowserWindow::handleNewWindowTriggered, QKeySequence::New);
-    fileMenu->addAction(tr("New &Incognito Window"), this, &BrowserWindow::handleNewIncognitoWindowTriggered);
+    QMenu *fileMenu = new QMenu(tr("&Файл"));
+    fileMenu->addAction(tr("&Новое окно"), this, &BrowserWindow::handleNewWindowTriggered, QKeySequence::New);
+    fileMenu->addAction(tr("Новое &приватное окно"), this, &BrowserWindow::handleNewIncognitoWindowTriggered);
 
-    QAction *newTabAction = new QAction(tr("New &Tab"), this);
+    QAction *newTabAction = new QAction(tr("Новая &вкладка"), this);
     newTabAction->setShortcuts(QKeySequence::AddTab);
     connect(newTabAction, &QAction::triggered, this, [this]() {
         m_tabWidget->createTab();
@@ -169,38 +168,38 @@ QMenu *BrowserWindow::createFileMenu(TabWidget *tabWidget)
     });
     fileMenu->addAction(newTabAction);
 
-    fileMenu->addAction(tr("&Open File..."), this, &BrowserWindow::handleFileOpenTriggered, QKeySequence::Open);
+    fileMenu->addAction(tr("&Открыть файл..."), this, &BrowserWindow::handleFileOpenTriggered, QKeySequence::Open);
     fileMenu->addSeparator();
 
-    QAction *closeTabAction = new QAction(tr("&Close Tab"), this);
+    QAction *closeTabAction = new QAction(tr("&Закрыть вкладку"), this);
     closeTabAction->setShortcuts(QKeySequence::Close);
     connect(closeTabAction, &QAction::triggered, [tabWidget]() {
         tabWidget->closeTab(tabWidget->currentIndex());
     });
     fileMenu->addAction(closeTabAction);
 
-    QAction *closeAction = new QAction(tr("&Quit"),this);
+    QAction *closeAction = new QAction(tr("&Выход"),this);
     closeAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_Q));
     connect(closeAction, &QAction::triggered, this, &QWidget::close);
     fileMenu->addAction(closeAction);
 
     connect(fileMenu, &QMenu::aboutToShow, [this, closeAction]() {
         if (m_browser->windows().count() == 1)
-            closeAction->setText(tr("&Quit"));
+            closeAction->setText(tr("&Выход"));
         else
-            closeAction->setText(tr("&Close Window"));
+            closeAction->setText(tr("Закрыть окно"));
     });
     return fileMenu;
 }
 
 QMenu *BrowserWindow::createEditMenu()
 {
-    QMenu *editMenu = new QMenu(tr("&Edit"));
-    QAction *findAction = editMenu->addAction(tr("&Find"));
+    QMenu *editMenu = new QMenu(tr("&Правка"));
+    QAction *findAction = editMenu->addAction(tr("&Поиск"));
     findAction->setShortcuts(QKeySequence::Find);
     connect(findAction, &QAction::triggered, this, &BrowserWindow::handleFindActionTriggered);
 
-    QAction *findNextAction = editMenu->addAction(tr("Find &Next"));
+    QAction *findNextAction = editMenu->addAction(tr("Искать &далее"));
     findNextAction->setShortcut(QKeySequence::FindNext);
     connect(findNextAction, &QAction::triggered, [this]() {
         if (!currentTab() || m_lastSearch.isEmpty())
@@ -208,7 +207,7 @@ QMenu *BrowserWindow::createEditMenu()
         currentTab()->findText(m_lastSearch);
     });
 
-    QAction *findPreviousAction = editMenu->addAction(tr("Find &Previous"));
+    QAction *findPreviousAction = editMenu->addAction(tr("Искать п&редыдущее"));
     findPreviousAction->setShortcut(QKeySequence::FindPrevious);
     connect(findPreviousAction, &QAction::triggered, [this]() {
         if (!currentTab() || m_lastSearch.isEmpty())
@@ -221,8 +220,8 @@ QMenu *BrowserWindow::createEditMenu()
 
 QMenu *BrowserWindow::createViewMenu(QToolBar *toolbar)
 {
-    QMenu *viewMenu = new QMenu(tr("&View"));
-    m_stopAction = viewMenu->addAction(tr("&Stop"));
+    QMenu *viewMenu = new QMenu(tr("&Вид"));
+    m_stopAction = viewMenu->addAction(tr("&Стоп"));
     QList<QKeySequence> shortcuts;
     shortcuts.append(QKeySequence(Qt::CTRL | Qt::Key_Period));
     shortcuts.append(Qt::Key_Escape);
@@ -231,27 +230,27 @@ QMenu *BrowserWindow::createViewMenu(QToolBar *toolbar)
         m_tabWidget->triggerWebPageAction(QWebEnginePage::Stop);
     });
 
-    m_reloadAction = viewMenu->addAction(tr("Reload Page"));
+    m_reloadAction = viewMenu->addAction(tr("Перезагрузить страницу"));
     m_reloadAction->setShortcuts(QKeySequence::Refresh);
     connect(m_reloadAction, &QAction::triggered, [this]() {
         m_tabWidget->triggerWebPageAction(QWebEnginePage::Reload);
     });
 
-    QAction *zoomIn = viewMenu->addAction(tr("Zoom &In"));
+    QAction *zoomIn = viewMenu->addAction(tr("Увеличить"));
     zoomIn->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_Plus));
     connect(zoomIn, &QAction::triggered, [this]() {
         if (currentTab())
             currentTab()->setZoomFactor(currentTab()->zoomFactor() + 0.1);
     });
 
-    QAction *zoomOut = viewMenu->addAction(tr("Zoom &Out"));
+    QAction *zoomOut = viewMenu->addAction(tr("Уменьшить"));
     zoomOut->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_Minus));
     connect(zoomOut, &QAction::triggered, [this]() {
         if (currentTab())
             currentTab()->setZoomFactor(currentTab()->zoomFactor() - 0.1);
     });
 
-    QAction *resetZoom = viewMenu->addAction(tr("Reset &Zoom"));
+    QAction *resetZoom = viewMenu->addAction(tr("Исходный масштаб"));
     resetZoom->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_0));
     connect(resetZoom, &QAction::triggered, [this]() {
         if (currentTab())
@@ -260,27 +259,27 @@ QMenu *BrowserWindow::createViewMenu(QToolBar *toolbar)
 
 
     viewMenu->addSeparator();
-    QAction *viewToolbarAction = new QAction(tr("Hide Toolbar"),this);
+    QAction *viewToolbarAction = new QAction(tr("Спрятать адресную строку"),this);
     viewToolbarAction->setShortcut(tr("Ctrl+|"));
     connect(viewToolbarAction, &QAction::triggered, [toolbar,viewToolbarAction]() {
         if (toolbar->isVisible()) {
-            viewToolbarAction->setText(tr("Show Toolbar"));
+            viewToolbarAction->setText(tr("Показать адресную строку"));
             toolbar->close();
         } else {
-            viewToolbarAction->setText(tr("Hide Toolbar"));
+            viewToolbarAction->setText(tr("Спрятать адресную строку"));
             toolbar->show();
         }
     });
     viewMenu->addAction(viewToolbarAction);
 
-    QAction *viewStatusbarAction = new QAction(tr("Hide Status Bar"), this);
+    QAction *viewStatusbarAction = new QAction(tr("Спрятать строку состояния"), this);
     viewStatusbarAction->setShortcut(tr("Ctrl+/"));
     connect(viewStatusbarAction, &QAction::triggered, [this, viewStatusbarAction]() {
         if (statusBar()->isVisible()) {
-            viewStatusbarAction->setText(tr("Show Status Bar"));
+            viewStatusbarAction->setText(tr("Показать строку состояния"));
             statusBar()->close();
         } else {
-            viewStatusbarAction->setText(tr("Hide Status Bar"));
+            viewStatusbarAction->setText(tr("Спрятать строку состояния"));
             statusBar()->show();
         }
     });
@@ -290,9 +289,9 @@ QMenu *BrowserWindow::createViewMenu(QToolBar *toolbar)
 
 QMenu *BrowserWindow::createWindowMenu(TabWidget *tabWidget)
 {
-    QMenu *menu = new QMenu(tr("&Window"));
+    QMenu *menu = new QMenu(tr("&Окно"));
 
-    QAction *nextTabAction = new QAction(tr("Show Next Tab"), this);
+    QAction *nextTabAction = new QAction(tr("Следующая вкладка"), this);
     QList<QKeySequence> shortcuts;
     shortcuts.append(QKeySequence(Qt::CTRL | Qt::Key_BraceRight));
     shortcuts.append(QKeySequence(Qt::CTRL | Qt::Key_PageDown));
@@ -301,7 +300,7 @@ QMenu *BrowserWindow::createWindowMenu(TabWidget *tabWidget)
     nextTabAction->setShortcuts(shortcuts);
     connect(nextTabAction, &QAction::triggered, tabWidget, &TabWidget::nextTab);
 
-    QAction *previousTabAction = new QAction(tr("Show Previous Tab"), this);
+    QAction *previousTabAction = new QAction(tr("Предыдущая вкладка"), this);
     shortcuts.clear();
     shortcuts.append(QKeySequence(Qt::CTRL | Qt::Key_BraceLeft));
     shortcuts.append(QKeySequence(Qt::CTRL | Qt::Key_PageUp));
@@ -329,16 +328,9 @@ QMenu *BrowserWindow::createWindowMenu(TabWidget *tabWidget)
     return menu;
 }
 
-QMenu *BrowserWindow::createHelpMenu()
-{
-    QMenu *helpMenu = new QMenu(tr("&Help"));
-    helpMenu->addAction(tr("About &Qt"), qApp, QApplication::aboutQt);
-    return helpMenu;
-}
-
 QToolBar *BrowserWindow::createToolBar()
 {
-    QToolBar *navigationBar = new QToolBar(tr("Navigation"));
+    QToolBar *navigationBar = new QToolBar(tr("Навигация"));
     navigationBar->setMovable(false);
     navigationBar->toggleViewAction()->setEnabled(false);
 
@@ -356,7 +348,7 @@ QToolBar *BrowserWindow::createToolBar()
     m_historyBackAction->setShortcuts(backShortcuts);
     m_historyBackAction->setIconVisibleInMenu(false);
     m_historyBackAction->setIcon(QIcon(QStringLiteral(":go-previous.png")));
-    m_historyBackAction->setToolTip(tr("Go back in history"));
+    m_historyBackAction->setToolTip(tr("Назад"));
     connect(m_historyBackAction, &QAction::triggered, [this]() {
         m_tabWidget->triggerWebPageAction(QWebEnginePage::Back);
     });
@@ -374,7 +366,7 @@ QToolBar *BrowserWindow::createToolBar()
     m_historyForwardAction->setShortcuts(fwdShortcuts);
     m_historyForwardAction->setIconVisibleInMenu(false);
     m_historyForwardAction->setIcon(QIcon(QStringLiteral(":go-next.png")));
-    m_historyForwardAction->setToolTip(tr("Go forward in history"));
+    m_historyForwardAction->setToolTip(tr("Вперед"));
     connect(m_historyForwardAction, &QAction::triggered, [this]() {
         m_tabWidget->triggerWebPageAction(QWebEnginePage::Forward);
     });
@@ -394,7 +386,7 @@ QToolBar *BrowserWindow::createToolBar()
 
     auto downloadsAction = new QAction(this);
     downloadsAction->setIcon(QIcon(QStringLiteral(":go-bottom.png")));
-    downloadsAction->setToolTip(tr("Show downloads"));
+    downloadsAction->setToolTip(tr("Показать загрузки"));
     navigationBar->addAction(downloadsAction);
     connect(downloadsAction, &QAction::triggered, [this]() {
         m_browser->downloadManagerWidget().show();
@@ -426,7 +418,7 @@ void BrowserWindow::handleWebActionEnabledChanged(QWebEnginePage::WebAction acti
 void BrowserWindow::handleWebViewTitleChanged(const QString &title)
 {
     QString suffix = m_profile->isOffTheRecord()
-        ? tr("Qt Simple Browser (Incognito)")
+        ? tr("Qt Simple Browser (приватное окно)")
         : tr("Qt Simple Browser");
 
     if (title.isEmpty())
@@ -449,7 +441,7 @@ void BrowserWindow::handleNewIncognitoWindowTriggered()
 
 void BrowserWindow::handleFileOpenTriggered()
 {
-    QUrl url = QFileDialog::getOpenFileUrl(this, tr("Open Web Resource"), QString(),
+    QUrl url = QFileDialog::getOpenFileUrl(this, tr("Открыть файл"), QString(),
                                                 tr("Web Resources (*.html *.htm *.svg *.png *.gif *.svgz);;All files (*.*)"));
     if (url.isEmpty())
         return;
@@ -461,8 +453,8 @@ void BrowserWindow::handleFindActionTriggered()
     if (!currentTab())
         return;
     bool ok = false;
-    QString search = QInputDialog::getText(this, tr("Find"),
-                                           tr("Find:"), QLineEdit::Normal,
+    QString search = QInputDialog::getText(this, tr("Поиск"),
+                                           tr("Найти:"), QLineEdit::Normal,
                                            m_lastSearch, &ok);
     if (ok && !search.isEmpty()) {
         m_lastSearch = search;
@@ -471,7 +463,7 @@ void BrowserWindow::handleFindActionTriggered()
 #else
         currentTab()->findText(m_lastSearch, 0, [this](bool found) {
             if (!found)
-                statusBar()->showMessage(tr("\"%1\" not found.").arg(m_lastSearch));
+                statusBar()->showMessage(tr("\"%1\" не найдено.").arg(m_lastSearch));
         });
 #endif
     }
@@ -480,9 +472,9 @@ void BrowserWindow::handleFindActionTriggered()
 void BrowserWindow::closeEvent(QCloseEvent *event)
 {
     if (m_tabWidget->count() > 1) {
-        int ret = QMessageBox::warning(this, tr("Confirm close"),
-                                       tr("Are you sure you want to close the window ?\n"
-                                          "There are %1 tabs open.").arg(m_tabWidget->count()),
+        int ret = QMessageBox::warning(this, tr("Подтвердите закрытие"),
+                                       tr("Вы уверены, что хотите закрыть окно?\n"
+                                          "%1 вкладок будут потеряны.").arg(m_tabWidget->count()),
                                        QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
         if (ret == QMessageBox::No) {
             event->ignore();
@@ -511,12 +503,12 @@ void BrowserWindow::handleWebViewLoadProgress(int progress)
     if (0 < progress && progress < 100) {
         m_stopReloadAction->setData(QWebEnginePage::Stop);
         m_stopReloadAction->setIcon(stopIcon);
-        m_stopReloadAction->setToolTip(tr("Stop loading the current page"));
+        m_stopReloadAction->setToolTip(tr("Остановить загрузку страницы"));
         m_progressBar->setValue(progress);
     } else {
         m_stopReloadAction->setData(QWebEnginePage::Reload);
         m_stopReloadAction->setIcon(reloadIcon);
-        m_stopReloadAction->setToolTip(tr("Reload the current page"));
+        m_stopReloadAction->setToolTip(tr("Перезагрузить страницу"));
         m_progressBar->setValue(0);
     }
 }
@@ -541,9 +533,9 @@ void BrowserWindow::handleDevToolsRequested(QWebEnginePage *source)
 void BrowserWindow::handleFindTextFinished(const QWebEngineFindTextResult &result)
 {
     if (result.numberOfMatches() == 0) {
-        statusBar()->showMessage(tr("\"%1\" not found.").arg(m_lastSearch));
+        statusBar()->showMessage(tr("\"%1\" не найдено.").arg(m_lastSearch));
     } else {
-        statusBar()->showMessage(tr("\"%1\" found: %2/%3").arg(m_lastSearch,
+        statusBar()->showMessage(tr("\"%1\" найдено: %2/%3").arg(m_lastSearch,
                                                                QString::number(result.activeMatch()),
                                                                QString::number(result.numberOfMatches())));
     }

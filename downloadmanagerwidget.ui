@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Downloads</string>
+   <string>Загрузки</string>
   </property>
   <property name="styleSheet">
    <string notr="true">#DownloadManagerWidget {
@@ -86,7 +86,7 @@
           <string notr="true">color: palette(shadow)</string>
          </property>
          <property name="text">
-          <string>No downloads</string>
+          <string>Нет загрузок</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>

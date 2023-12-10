@@ -223,7 +223,7 @@ WebView *TabWidget::createBackgroundTab()
     WebPage *webPage = new WebPage(m_profile, webView);
     webView->setPage(webPage);
     setupView(webView);
-    int index = addTab(webView, tr("(Untitled)"));
+    int index = addTab(webView, tr("(Пустая вкладка)"));
     setTabIcon(index, webView->favIcon());
     // Workaround for QTBUG-61770
     webView->resize(currentWidget()->size());
