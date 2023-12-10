@@ -95,6 +95,7 @@ BrowserWindow::BrowserWindow(Browser *browser, QWebEngineProfile *profile, bool 
         menuBar()->addMenu(createFileMenu(m_tabWidget));
         menuBar()->addMenu(createEditMenu());
         menuBar()->addMenu(createViewMenu(toolbar));
+        menuBar()->addMenu(createBookmarkMenu());
         menuBar()->addMenu(createWindowMenu(m_tabWidget));
     }
 
@@ -285,6 +286,61 @@ QMenu *BrowserWindow::createViewMenu(QToolBar *toolbar)
     });
     viewMenu->addAction(viewStatusbarAction);
     return viewMenu;
+}
+
+QMenu *BrowserWindow::createBookmarkMenu()
+{
+    QMenu *bookmarkMenu = new QMenu(tr("&Закладки"));
+
+    QAction *manageBookmars = new QAction(tr("Управление закладками"));
+    manageBookmars->setShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_O));
+    connect(manageBookmars, &QAction::triggered, [this]() {
+//        if (currentTab())
+//            currentTab()->setZoomFactor(currentTab()->zoomFactor() + 0.1);
+    });
+
+    QAction *addBookmark = new QAction(tr("Добавить текущую вкладку в закладки..."));
+    addBookmark->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_D));
+    connect(addBookmark, &QAction::triggered, [this]() {
+//        if (currentTab())
+//            currentTab()->setZoomFactor(currentTab()->zoomFactor() - 0.1);
+    });
+
+    connect(bookmarkMenu, &QMenu::aboutToShow, [this, manageBookmars, addBookmark, bookmarkMenu]() {
+        bookmarkMenu->clear();
+        bookmarkMenu->addAction(manageBookmars);
+        bookmarkMenu->addAction(addBookmark);
+        bookmarkMenu->addSeparator();
+
+        const char *home_dir = getenv("HOME");
+        if (NULL == home_dir)
+           return;
+
+        char fn[256];
+        strlcpy(fn, home_dir, sizeof(fn));
+        strlcat(fn, "/.config/qtsimplebrowser/bookmarks", sizeof(fn));
+        FILE *fBookmarks = fopen(fn, "r");
+        if (NULL == fBookmarks)
+            return;
+
+        char *name = NULL;
+        size_t name_len;
+        char *url = NULL;
+        size_t url_len;
+
+        while (getline(&name, &name_len, fBookmarks) != -1 && getline(&url, &url_len, fBookmarks) != -1) {
+            QAction *action = bookmarkMenu->addAction(name, this, &BrowserWindow::handleBookmarkTriggered);
+            action->setData(QUrl::fromUserInput(url));
+        }
+
+        if (name)
+            free(name);
+        if (url)
+            free(url);
+        fclose(fBookmarks);
+    });
+
+    return bookmarkMenu;
 }
 
 QMenu *BrowserWindow::createWindowMenu(TabWidget *tabWidget)
@@ -521,6 +577,12 @@ void BrowserWindow::handleShowWindowTriggered()
         windows.at(offset)->activateWindow();
         windows.at(offset)->currentTab()->setFocus();
     }
+}
+
+void BrowserWindow::handleBookmarkTriggered()
+{
+    if (QAction *action = qobject_cast<QAction*>(sender()))
+        m_tabWidget->setUrl(action->data().toUrl());
 }
 
 void BrowserWindow::handleDevToolsRequested(QWebEnginePage *source)

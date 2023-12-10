@@ -84,6 +84,7 @@ private slots:
     void handleFileOpenTriggered();
     void handleFindActionTriggered();
     void handleShowWindowTriggered();
+    void handleBookmarkTriggered();
     void handleWebViewLoadProgress(int);
     void handleWebViewTitleChanged(const QString &title);
     void handleWebActionEnabledChanged(QWebEnginePage::WebAction action, bool enabled);
@@ -96,6 +97,7 @@ private:
     QMenu *createFileMenu(TabWidget *tabWidget);
     QMenu *createEditMenu();
     QMenu *createViewMenu(QToolBar *toolBar);
+    QMenu *createBookmarkMenu();
     QMenu *createWindowMenu(TabWidget *tabWidget);
     QToolBar *createToolBar();
 
