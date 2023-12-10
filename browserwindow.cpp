@@ -299,8 +299,14 @@ QMenu *BrowserWindow::createBookmarkMenu()
     QAction *manageBookmars = new QAction(tr("Управление закладками"));
     manageBookmars->setShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_O));
     connect(manageBookmars, &QAction::triggered, [this]() {
-//        if (currentTab())
-//            currentTab()->setZoomFactor(currentTab()->zoomFactor() + 0.1);
+        const char *home_dir = getenv("HOME");
+        if (NULL == home_dir)
+           return;
+
+        char fn[256];
+        strlcpy(fn, home_dir, sizeof(fn));
+        strlcat(fn, "/" CONFIG_DIR "/" BOOKMARKS_FILE, sizeof(fn));
+        if (fork() == 0) execlp("/usr/bin/xfw", "/usr/bin/xfw", fn, NULL);
     });
 
     QAction *addBookmark = new QAction(tr("Добавить текущую вкладку в закладки..."));
