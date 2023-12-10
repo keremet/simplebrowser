@@ -55,16 +55,6 @@
 #include <QWebEngineProfile>
 #include <QWebEngineSettings>
 
-QUrl commandLineUrlArgument()
-{
-    const QStringList args = QCoreApplication::arguments();
-    for (const QString &arg : args.mid(1)) {
-        if (!arg.startsWith(QLatin1Char('-')))
-            return QUrl::fromUserInput(arg);
-    }
-    return QUrl(QStringLiteral("https://www.qt.io"));
-}
-
 int main(int argc, char **argv)
 {
     QCoreApplication::setOrganizationName("QtExamples");
@@ -80,11 +70,15 @@ int main(int argc, char **argv)
     QWebEngineProfile::defaultProfile()->setUseForGlobalCertificateVerification();
 #endif
 
-    QUrl url = commandLineUrlArgument();
-
     Browser browser;
     BrowserWindow *window = browser.createWindow();
-    window->tabWidget()->setUrl(url);
+
+    for (int i = 1; i < argc; i++) {
+        if (*(argv[i]) != '-') {
+            window->tabWidget()->setUrl(QUrl::fromUserInput(argv[i]));
+            break;
+        }
+    }
 
     return app.exec();
 }
