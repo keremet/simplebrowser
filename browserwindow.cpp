@@ -309,7 +309,7 @@ QMenu *BrowserWindow::createBookmarkMenu()
         if (fork() == 0) execlp("/usr/bin/xfw", "/usr/bin/xfw", fn, NULL);
     });
 
-    QAction *addBookmark = new QAction(tr("Добавить текущую вкладку в закладки..."));
+    QAction *addBookmark = new QAction(tr("Добавить текущую вкладку в закладки"));
     addBookmark->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_D));
     connect(addBookmark, &QAction::triggered, [this]() {
         WebView *wv = currentTab();
