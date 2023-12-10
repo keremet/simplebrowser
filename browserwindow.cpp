@@ -70,6 +70,8 @@
 #include <QWebEngineFindTextResult>
 #endif
 #include <QWebEngineProfile>
+#include <sys/stat.h>
+#include <unistd.h>
 
 BrowserWindow::BrowserWindow(Browser *browser, QWebEngineProfile *profile, bool forDevTools)
     : m_browser(browser)
@@ -290,6 +292,8 @@ QMenu *BrowserWindow::createViewMenu(QToolBar *toolbar)
 
 QMenu *BrowserWindow::createBookmarkMenu()
 {
+#define CONFIG_DIR ".config/qtsimplebrowser"
+#define BOOKMARKS_FILE "bookmarks"
     QMenu *bookmarkMenu = new QMenu(tr("&Закладки"));
 
     QAction *manageBookmars = new QAction(tr("Управление закладками"));
@@ -302,8 +306,30 @@ QMenu *BrowserWindow::createBookmarkMenu()
     QAction *addBookmark = new QAction(tr("Добавить текущую вкладку в закладки..."));
     addBookmark->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_D));
     connect(addBookmark, &QAction::triggered, [this]() {
-//        if (currentTab())
-//            currentTab()->setZoomFactor(currentTab()->zoomFactor() - 0.1);
+        WebView *wv = currentTab();
+        if (NULL == wv)
+            return;
+
+        const char *home_dir = getenv("HOME");
+        if (NULL == home_dir)
+           return;
+
+        char fn[256];
+        strlcpy(fn, home_dir, sizeof(fn));
+        strlcat(fn, "/" CONFIG_DIR, sizeof(fn));
+
+        if (access(fn, F_OK) != 0)
+            mkdir(fn, 0777);
+
+        strlcat(fn, "/" BOOKMARKS_FILE, sizeof(fn));
+
+        FILE *fBookmarks = fopen(fn, "a");
+        if (NULL == fBookmarks)
+            return;
+
+        fputs(wv->title().toStdString().c_str(), fBookmarks); fputc('\n', fBookmarks);
+        fputs(wv->url().toString().toStdString().c_str(), fBookmarks); fputc('\n', fBookmarks);
+        fclose(fBookmarks);
     });
 
     connect(bookmarkMenu, &QMenu::aboutToShow, [this, manageBookmars, addBookmark, bookmarkMenu]() {
@@ -318,7 +344,7 @@ QMenu *BrowserWindow::createBookmarkMenu()
 
         char fn[256];
         strlcpy(fn, home_dir, sizeof(fn));
-        strlcat(fn, "/.config/qtsimplebrowser/bookmarks", sizeof(fn));
+        strlcat(fn, "/" CONFIG_DIR "/" BOOKMARKS_FILE, sizeof(fn));
         FILE *fBookmarks = fopen(fn, "r");
         if (NULL == fBookmarks)
             return;
@@ -341,6 +367,8 @@ QMenu *BrowserWindow::createBookmarkMenu()
     });
 
     return bookmarkMenu;
+#undef CONFIG_DIR
+#undef BOOKMARKS_FILE
 }
 
 QMenu *BrowserWindow::createWindowMenu(TabWidget *tabWidget)
